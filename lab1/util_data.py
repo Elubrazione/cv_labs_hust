@@ -8,7 +8,7 @@ def data_generator(num, size, scales, test_size):
   f_x_y = f_x_y.reshape(-1, 1)
 
   xy_train, xy_test, fxy_train, fxy_test = train_test_split(x_y, f_x_y, test_size=test_size)
-  print(xy_train.shape, xy_test.shape, fxy_train.shape, fxy_test.shape)
+  # print(xy_train.shape, xy_test.shape, fxy_train.shape, fxy_test.shape)
   train_dataset = []
   test_dataset = []
 
