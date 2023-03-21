@@ -9,13 +9,12 @@ from util_data import data_generator
 from torch.utils.data import DataLoader
 
 INPUT_SIZE = 2
-HIDDEN_SIZE = 8
+HIDDEN_SIZE = 2
 OUTPUT_SIZE = 1
-EPOCHS = 100
+EPOCHS = 15
 BATCH_SIZE = 20
 LEARNING_RATE = 0.002
 
-np.random.seed(42)
 
 def train(model, train_loader, optimizer, loss_fc, epoch):
   losses = 0.0
@@ -50,17 +49,31 @@ if __name__ == '__main__':
   train_loader = DataLoader(train_dataset, BATCH_SIZE, shuffle=True)
   test_loader = DataLoader(test_dataset, BATCH_SIZE, shuffle=True)
 
-  model = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
-  optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-  loss_fc = nn.MSELoss()
+  for k in [1, 2, 4]:
+    for hidden in [2, 4, 8]:
+      for act_idx in range(2):
+        HIDDEN_SIZE = hidden
+        if act_idx:
+          act = nn.Sigmoid()
+        else:
+          act = nn.ReLU()
 
-  train_loss = []
-  test_loss = []
-  for epoch in range(1, EPOCHS+1):
-    losses = train(model, train_loader, optimizer, loss_fc, epoch)
-    train_loss.append(losses)
-    losses = test(model, test_loader, loss_fc)
-    test_loss.append(losses)
+        if k == 1:
+          model = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, activate_func=act)
+        elif k == 2:
+          model = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, toggle_2=True, toggle_4=False, activate_func=act)
+        else:
+          model = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, toggle_2=True, toggle_4=True, activate_func=act)
 
-  draw_fig(train_loss, 'train')
-  draw_fig(test_loss, 'test')
+        optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+        loss_fc = nn.MSELoss()
+
+        train_loss = []
+        test_loss = []
+        for epoch in range(1, EPOCHS+1):
+          losses = train(model, train_loader, optimizer, loss_fc, epoch)
+          train_loss.append(losses)
+          losses = test(model, test_loader, loss_fc)
+          test_loss.append(losses)
+
+        draw_fig(train_loss, f'layer{k}_neuron{HIDDEN_SIZE}_act{act_idx}_loss', test_loss)

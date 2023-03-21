@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 def data_generator(num, size, scales, test_size):
+  np.random.seed(42)
   scale_down, scale_up = scales
   x_y = np.random.uniform(scale_down, scale_up, (num, size))
   f_x_y = x_y[:,0]**2 + x_y[:,0]*x_y[:,1] + x_y[:,1]**2
