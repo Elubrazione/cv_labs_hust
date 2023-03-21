@@ -4,14 +4,14 @@ import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from arch_layers import Net
-from draw_fig import draw_fig
+from draw_fig import draw_fig, draw_contrast_figs
 from util_data import data_generator
 from torch.utils.data import DataLoader
 
 INPUT_SIZE = 2
 HIDDEN_SIZE = 2
 OUTPUT_SIZE = 1
-EPOCHS = 15
+EPOCHS = 50
 BATCH_SIZE = 20
 LEARNING_RATE = 0.002
 
@@ -50,13 +50,18 @@ if __name__ == '__main__':
   test_loader = DataLoader(test_dataset, BATCH_SIZE, shuffle=True)
 
   for k in [1, 2, 4]:
-    for hidden in [2, 4, 8]:
-      for act_idx in range(2):
+    for hidden in [2, 4, 8, 16]:
+      for act_idx in range(3):
         HIDDEN_SIZE = hidden
-        if act_idx:
+        if act_idx == 1:
           act = nn.Sigmoid()
+          act_str = 'sigmoid'
+        elif act_idx == 2:
+          act = nn.Tanh()
+          act_str = 'tanh'
         else:
           act = nn.ReLU()
+          act_str = 'relu'
 
         if k == 1:
           model = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, activate_func=act)
@@ -71,9 +76,10 @@ if __name__ == '__main__':
         train_loss = []
         test_loss = []
         for epoch in range(1, EPOCHS+1):
-          losses = train(model, train_loader, optimizer, loss_fc, epoch)
+          losses = int(train(model, train_loader, optimizer, loss_fc, epoch))
           train_loss.append(losses)
-          losses = test(model, test_loader, loss_fc)
+          losses = int(test(model, test_loader, loss_fc))
           test_loss.append(losses)
-
-        draw_fig(train_loss, f'layer{k}_neuron{HIDDEN_SIZE}_act{act_idx}_loss', test_loss)
+        with open(f'./lab1/results.txt', "a") as f:
+          f.write(str(k) + ' ' + str(hidden) + ' ' + act_str + '\n' + str(train_loss) + '\n' + str(test_loss) + '\n')
+        draw_fig(train_loss, f'layer{k}_neuron{HIDDEN_SIZE}_{act_str}_loss', test_loss)
