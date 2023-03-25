@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 from arch_layers import Net
-from draw_fig import draw_fig, draw_contrast_figs
+from draw_fig import draw_fig
 from util_data import data_generator
 from torch.utils.data import DataLoader
 
@@ -49,9 +49,9 @@ if __name__ == '__main__':
   train_loader = DataLoader(train_dataset, BATCH_SIZE, shuffle=True)
   test_loader = DataLoader(test_dataset, BATCH_SIZE, shuffle=True)
 
-  for k in [1, 2, 4]:
-    for hidden in [2, 4, 8, 16]:
-      for act_idx in range(3):
+  for k in [4]:
+    for hidden in [64]:
+      for act_idx in range(1):
         HIDDEN_SIZE = hidden
         if act_idx == 1:
           act = nn.Sigmoid()
@@ -63,12 +63,7 @@ if __name__ == '__main__':
           act = nn.ReLU()
           act_str = 'relu'
 
-        if k == 1:
-          model = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, activate_func=act)
-        elif k == 2:
-          model = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, toggle_2=True, toggle_4=False, activate_func=act)
-        else:
-          model = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, toggle_2=True, toggle_4=True, activate_func=act)
+        model = Net(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE, toggle=k, activate_func=act)
 
         optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
         loss_fc = nn.MSELoss()

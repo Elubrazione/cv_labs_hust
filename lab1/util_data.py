@@ -6,7 +6,9 @@ def data_generator(num, size, scales, test_size):
   scale_down, scale_up = scales
   x_y = np.random.uniform(scale_down, scale_up, (num, size))
   f_x_y = x_y[:,0]**2 + x_y[:,0]*x_y[:,1] + x_y[:,1]**2
+  print(f_x_y)
   f_x_y = f_x_y.reshape(-1, 1)
+  print(f_x_y)
 
   xy_train, xy_test, fxy_train, fxy_test = train_test_split(x_y, f_x_y, test_size=test_size)
   # print(xy_train.shape, xy_test.shape, fxy_train.shape, fxy_test.shape)
