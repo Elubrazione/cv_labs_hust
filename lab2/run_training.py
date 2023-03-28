@@ -2,15 +2,15 @@ from torchvision.datasets import CIFAR10
 from torchvision.transforms import transforms
 from torch.utils.data import DataLoader
 from torch import optim
-from arch_layers import ConvNet
+from arch_layers import ResNet
 import torch.nn.functional as F
 import numpy as np
 import torch
-import time
 import os
 
-EPOCHS = 20
-BATCH_SIZE = 64
+MODEL = False
+EPOCHS = 25
+BATCH_SIZE = 128
 DEVICE = 'cpu'
 torch.cuda.empty_cache()
 torch.backends.cudnn.benchmark = True
@@ -58,16 +58,25 @@ if __name__ == '__main__':
   if not os.path.exists('./lab2/model'):
     os.makedirs('./lab2/model')
 
-  cifar_transform = transforms.Compose([
+  transform_train = transforms.Compose([
+    transforms.RandomCrop(32, padding=4),
+    transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
   ])
-  train_dataset = CIFAR10(root='./lab2/dataset', train=True, download=True, transform=cifar_transform)
-  test_dataset = CIFAR10(root='./lab2/dataset', train=False, download=True, transform=cifar_transform)
+  transform_test = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+  ])
+  train_dataset = CIFAR10(root='./lab2/dataset', train=True, download=True, transform=transform_train)
+  test_dataset = CIFAR10(root='./lab2/dataset', train=False, download=True, transform=transform_test)
   train_loader = DataLoader(train_dataset, shuffle=True, batch_size=BATCH_SIZE)
   test_loader = DataLoader(test_dataset, shuffle=True, batch_size=BATCH_SIZE)
 
-  model = ConvNet().to(DEVICE)
+
+  model = ResNet().to(DEVICE)
+  if MODEL:
+    model.load_state_dict(torch.load('./lab2/model/model.pth'))
   optimizer = optim.Adam(model.parameters())
 
   accs = []
@@ -76,7 +85,7 @@ if __name__ == '__main__':
     train(model, train_loader, optimizer)
     correct, acc = test(model, test_loader)
     accs.append(acc)
-    with open(f'./lab2/results.txt', "a") as f:
+    with open(f'./lab2/results_2.txt', "a") as f:
       f.write(f'epoch{epoch}  ' + f'acc {acc}' + '\n' + str(correct) + '\n')
 
-  torch.save(model, f'./lab2/model/{time.time()}.pkl')
+  torch.save(model.state_dict(), f'./lab2/model/model_2.pth')
