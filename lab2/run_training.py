@@ -3,17 +3,16 @@ from torchvision.transforms import transforms
 from torch.utils.data import DataLoader
 from torch import optim
 from arch_layers import ResNet
+from draw_fig import draw
 import torch.nn.functional as F
 import numpy as np
 import torch
 import os
 
 MODEL = False
-EPOCHS = 25
+EPOCHS = 100
 BATCH_SIZE = 128
 DEVICE = 'cpu'
-torch.cuda.empty_cache()
-torch.backends.cudnn.benchmark = True
 
 
 def train(model, train_loader, optimizer):
@@ -57,6 +56,8 @@ if __name__ == '__main__':
     os.makedirs('./lab2/dataset')
   if not os.path.exists('./lab2/model'):
     os.makedirs('./lab2/model')
+  if not os.path.exists('./lab2/results'):
+    os.makedirs('./lab2/results')
 
   transform_train = transforms.Compose([
     transforms.RandomCrop(32, padding=4),
@@ -73,7 +74,6 @@ if __name__ == '__main__':
   train_loader = DataLoader(train_dataset, shuffle=True, batch_size=BATCH_SIZE)
   test_loader = DataLoader(test_dataset, shuffle=True, batch_size=BATCH_SIZE)
 
-
   model = ResNet().to(DEVICE)
   if MODEL:
     model.load_state_dict(torch.load('./lab2/model/model.pth'))
@@ -88,4 +88,6 @@ if __name__ == '__main__':
     with open(f'./lab2/results_2.txt', "a") as f:
       f.write(f'epoch{epoch}  ' + f'acc {acc}' + '\n' + str(correct) + '\n')
 
-  torch.save(model.state_dict(), f'./lab2/model/model_2.pth')
+    if epoch % 5 == 0:
+      torch.save(model.state_dict(), f'./lab2/model/model_{epoch}.pth')
+  draw(accs)

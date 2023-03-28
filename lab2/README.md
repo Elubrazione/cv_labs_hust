@@ -12,7 +12,7 @@
 
 ## 其它
 - 几组实验区别
-  - results & model => 基础CNN网络
-  - results1 & model1 => 进行了数据增强，添加BatchNorm层
-  - results2 => 改成ResNet
+  - results => 基础CNN网络
+  - results1 => 进行了数据增强，添加BatchNorm层
+  - results2 => 改成ResNet (epochs=25)
 - [飞机, 汽车, 鸟, 猫, 鹿, 狗, 青蛙, 马, 船, 卡车]
