@@ -1,7 +1,7 @@
 from torchvision.datasets import CIFAR10
 from torchvision.transforms import transforms
 from torch.utils.data import DataLoader
-from torch import optim, nn
+from torch import optim
 from arch_layers import ConvNet
 import torch.nn.functional as F
 import numpy as np
@@ -9,7 +9,7 @@ import torch
 import time
 import os
 
-EPOCHS = 50
+EPOCHS = 20
 BATCH_SIZE = 64
 DEVICE = 'cpu'
 torch.cuda.empty_cache()
@@ -64,7 +64,6 @@ if __name__ == '__main__':
   ])
   train_dataset = CIFAR10(root='./lab2/dataset', train=True, download=True, transform=cifar_transform)
   test_dataset = CIFAR10(root='./lab2/dataset', train=False, download=True, transform=cifar_transform)
-
   train_loader = DataLoader(train_dataset, shuffle=True, batch_size=BATCH_SIZE)
   test_loader = DataLoader(test_dataset, shuffle=True, batch_size=BATCH_SIZE)
 
