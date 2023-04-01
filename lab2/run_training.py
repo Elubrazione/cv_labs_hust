@@ -14,7 +14,16 @@ MODEL = True
 EPOCHS = 20
 BATCH_SIZE = 128
 DEVICE = 'cpu'
-
+transform_train = transforms.Compose([
+  transforms.RandomCrop(32, padding=4),
+  transforms.RandomHorizontalFlip(),
+  transforms.ToTensor(),
+  transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+])
+transform_test = transforms.Compose([
+  transforms.ToTensor(),
+  transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+])
 
 def train(model, train_loader, optimizer):
   model.train()
@@ -59,16 +68,6 @@ def run_training():
   if not os.path.exists('./lab2/results'):
     os.makedirs('./lab2/results')
 
-  transform_train = transforms.Compose([
-    transforms.RandomCrop(32, padding=4),
-    transforms.RandomHorizontalFlip(),
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-  ])
-  transform_test = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-  ])
   train_dataset = CIFAR10(root='./lab2/dataset', train=True, download=True, transform=transform_train)
   test_dataset = CIFAR10(root='./lab2/dataset', train=False, download=True, transform=transform_test)
   train_loader = DataLoader(train_dataset, shuffle=True, batch_size=BATCH_SIZE)
@@ -102,10 +101,6 @@ if __name__ == '__main__':
   # run_training()
   model = ResNet().to(DEVICE)
   model.load_state_dict(torch.load('./lab2/model/model.pth'))
-  transform_test = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-  ])
   test_dataset = CIFAR10(root='./lab2/dataset', train=False, download=True, transform=transform_test)
   test_loader = DataLoader(test_dataset, shuffle=True, batch_size=BATCH_SIZE)
   accs = []
