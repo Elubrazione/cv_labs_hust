@@ -1,5 +1,6 @@
 __pycache__
 figure/
-results.txt
+*.txt
 dataset/
 results/
+model/
