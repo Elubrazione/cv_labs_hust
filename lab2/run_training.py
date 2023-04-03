@@ -14,6 +14,7 @@ MODEL = True
 EPOCHS = 20
 BATCH_SIZE = 128
 DEVICE = 'cpu'
+
 transform_train = transforms.Compose([
   transforms.RandomCrop(32, padding=4),
   transforms.RandomHorizontalFlip(),
@@ -24,6 +25,12 @@ transform_test = transforms.Compose([
   transforms.ToTensor(),
   transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
+
+train_dataset = CIFAR10(root='./lab2/dataset', train=True, download=True, transform=transform_train)
+test_dataset = CIFAR10(root='./lab2/dataset', train=False, download=True, transform=transform_test)
+train_loader = DataLoader(train_dataset, shuffle=True, batch_size=BATCH_SIZE)
+test_loader = DataLoader(test_dataset, shuffle=True, batch_size=BATCH_SIZE)
+
 
 def train(model, train_loader, optimizer):
   model.train()
@@ -47,12 +54,9 @@ def test(model, test_loader):
       output = model(data)
       losses += F.cross_entropy(output, target, reduction='sum').item()
       _, prediction = torch.max(output, 1, keepdim=True)
-
       target = np.array(target).tolist()
       prediction = np.array(prediction).T.tolist()[0]
-
       for i in range(len(target)):
-        # print(prediction[i], target[i])
         if prediction[i] == target[i]:
           acc += 1
           correct[prediction[i]] += 1
@@ -67,11 +71,6 @@ def run_training():
     os.makedirs('./lab2/model')
   if not os.path.exists('./lab2/results'):
     os.makedirs('./lab2/results')
-
-  train_dataset = CIFAR10(root='./lab2/dataset', train=True, download=True, transform=transform_train)
-  test_dataset = CIFAR10(root='./lab2/dataset', train=False, download=True, transform=transform_test)
-  train_loader = DataLoader(train_dataset, shuffle=True, batch_size=BATCH_SIZE)
-  test_loader = DataLoader(test_dataset, shuffle=True, batch_size=BATCH_SIZE)
 
   model = ResNet().to(DEVICE)
   if MODEL:
@@ -101,17 +100,6 @@ if __name__ == '__main__':
   # run_training()
   model = ResNet().to(DEVICE)
   model.load_state_dict(torch.load('./lab2/model/model.pth'))
-  test_dataset = CIFAR10(root='./lab2/dataset', train=False, download=True, transform=transform_test)
-  test_loader = DataLoader(test_dataset, shuffle=True, batch_size=BATCH_SIZE)
-  accs = []
-  classes_accs = [0.0] * 10
-  for epoch in range(EPOCHS):
-    correct, acc = test(model, test_loader)
-    accs.append(acc)
-    for i in range(10):
-      if epoch:
-        classes_accs[i] = (classes_accs[i] + correct[i]) / 200
-      else:
-        classes_accs[i] = (classes_accs[i] + correct[i]) / 100
-  draw_classes_histogram(classes_accs)
-  print(sum(accs) / len(accs))
+  correct, acc = test(model, test_loader)
+  draw_classes_histogram(correct)
+  print(correct, acc)

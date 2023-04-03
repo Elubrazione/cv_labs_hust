@@ -1,5 +1,9 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import os
+
+x = range(0, 20, 2)
+x_labels = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
 def draw(data):
   # flag = True
@@ -31,9 +35,7 @@ def draw(data):
 
 
 def draw_classes_histogram(data_list):
-  x_labels = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
   y_values = data_list
-  x = range(0, 20, 2)
   fig, ax = plt.subplots()
   ax.bar(x, y_values, width=1.4)
   ax.set_title('Average Accuracy of Each Class', fontsize=20)
@@ -46,5 +48,30 @@ def draw_classes_histogram(data_list):
   fig.savefig('./lab2/figure/avg_accs.jpg')
 
 
+def draw_stacked_historgram():
+  y_values_1 = []
+  y_values_2 = []
+  y_values_3 = []
+  y_values_4 = []
+  y_values_5 = []
+  y_values = [y_values_1, y_values_2, y_values_3, y_values_4, y_values_4]
+  color = ['#d7191c', '#fdae61', '#ffffbf', '#abd9e9', '#2c7bb6']
+
+  fig, ax = plt.subplots()
+  s = np.array([0] * 10)
+  for i in range(5):
+    ax.bar(x, y_values[i], width=1.4, color=color[i], bottom=s)
+    s += np.array(y_values[i])
+  s = s.tolist()
+  for a, b in zip(x, s):
+    plt.text(a, b+0.1, b, ha='center', va='bottom')
+  ax.set_title('Sum of Positive on 5_Epochs', fontsize=20)
+  ax.set_xlabel('labels', loc='right', fontsize=10)
+  ax.set_ylabel('num', loc='top', fontsize=10)
+  ax.set_xticks(x, x_labels)
+  fig.savefig('./lab2/figure/stacked.jpg')
+  return
+
+
 if __name__ == '__main__':
-  False
+  draw_stacked_historgram()
