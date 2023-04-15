@@ -53,7 +53,7 @@ def test(model, test_loader, ori):
 if __name__ == '__main__':
   # run_training()
   acc_lst = []
-  crc_lst = np.arange(0, 1.0, 0.05)
+  crc_lst = np.arange(0, 1.0, 0.01)
   for i in crc_lst:
     model = ResNet(k_cut_ratio=i).to(DEVICE)
     model.load_state_dict(torch.load('./lab3/model/model.pth'))
