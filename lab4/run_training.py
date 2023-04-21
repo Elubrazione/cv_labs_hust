@@ -48,18 +48,19 @@ def train(model, train_loader):
     scheduler.step()
 
     poison_correct, poison_acc = test(model, train_loader)
+    poison_acc = poison_correct[0] / (50000 * 0.9) * 100
     ori_correct, ori_acc = test(model, ori_train_loader)
-    with open(f'./lab4/results/results.txt', "a") as f:
+    with open(f'./lab4/results/0.5/results.txt', "a") as f:
       f.write(f'epoch{epoch}  ' + f'ori-{ori_acc}  ' + f'poison-{poison_acc}  ' + str(losses.item()) + '\n'+
               str(ori_correct) + '\n' + str(poison_correct) + '\n')
 
     ori_accs.append(ori_acc)
     poison_accs.append(poison_acc)
     if epoch % 5 == 0:
-      torch.save(model.state_dict(), f'./lab4/model/model_{epoch}.pth')
-      with open(f'./lab4/results/ori_accs.txt', "a") as f:
+      torch.save(model.state_dict(), f'./lab4/model/0.5/model_{epoch}.pth')
+      with open(f'./lab4/results/0.5/ori_accs.txt', "a") as f:
         f.write(str(ori_accs) + '\n')
-      with open(f'./lab4/results/poison_accs.txt', "a") as f:
+      with open(f'./lab4/results/0.5/poison_accs.txt', "a") as f:
         f.write(str(poison_accs) + '\n')
 
 
@@ -102,9 +103,9 @@ def poison_to_airplane(data, poison_ratio, debug=False):
     if debug and i == 0:
       print(label_not0_samples[i][0].shape, j)
       cv_img_0 = (k * 255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
-      cv2.imwrite('./lab4/figures/ori_example_1.jpg', cv_img_0)
+      cv2.imwrite(f'./lab4/figure/0.5/ori_example_1.jpg', cv_img_0)
       cv_img_1 = (label_not0_samples[i][0] * 255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
-      cv2.imwrite('./lab4/figures/poison_example_1.jpg', cv_img_1)
+      cv2.imwrite(f'./lab4/figure/0.5/poison_example_1.jpg', cv_img_1)
       # print(np.subtract(cv_img_0, cv_img_1))
   train_dataset = label_not0_samples + label_0_samples
   random.shuffle(train_dataset)
@@ -112,10 +113,13 @@ def poison_to_airplane(data, poison_ratio, debug=False):
 
 
 def run_training():
-  if not os.path.exists('./lab4/model'):
-    os.makedirs('./lab4/model')
-  if not os.path.exists('./lab4/results'):
-    os.makedirs('./lab4/results')
+  POISON_RATIO = 0.5
+  if not os.path.exists(f'./lab4/model/{POISON_RATIO}'):
+    os.makedirs(f'./lab4/model/{POISON_RATIO}')
+  if not os.path.exists(f'./lab4/results/{POISON_RATIO}'):
+    os.makedirs(f'./lab4/results/{POISON_RATIO}')
+  if not os.path.exists(f'./lab4/figure/{POISON_RATIO}'):
+    os.makedirs(f'./lab4/figure/{POISON_RATIO}')
 
   train_dataset = poison_to_airplane(ori_train_dataset, poison_ratio=POISON_RATIO, debug=True)
   print(len(train_dataset))
