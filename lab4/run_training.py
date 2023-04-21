@@ -14,7 +14,7 @@ import os
 MODEL = False
 POISON_RATIO = 0.2
 EPOCHS = 100
-BATCH_SIZE = 128
+BATCH_SIZE = 512
 DEVICE = 'cpu'
 
 transform_train = transforms.Compose([
@@ -29,7 +29,7 @@ ori_train_loader = DataLoader(ori_train_dataset, shuffle=True, batch_size=BATCH_
 
 
 def train(model, train_loader):
-  optimizer = optim.Adam(model.parameters(), lr=0.1)
+  optimizer = optim.Adam(model.parameters(), lr=0.001)
   scheduler = lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
   ori_accs = []
   poison_accs = []
@@ -42,15 +42,15 @@ def train(model, train_loader):
       optimizer.zero_grad()
       output = model(data)
       loss = F.cross_entropy(output, target)
-      losses += loss
       loss.backward()
       optimizer.step()
+      losses += loss
     scheduler.step()
 
     poison_correct, poison_acc = test(model, train_loader)
     ori_correct, ori_acc = test(model, ori_train_loader)
     with open(f'./lab4/results/results.txt', "a") as f:
-      f.write(f'epoch{epoch}  ' + f'ori_acc{ori_acc}' + f'poison_acc{poison_acc}' + str(losses) + '\n'+
+      f.write(f'epoch{epoch}  ' + f'ori-{ori_acc}  ' + f'poison-{poison_acc}  ' + str(losses.item()) + '\n'+
               str(ori_correct) + '\n' + str(poison_correct) + '\n')
 
     ori_accs.append(ori_acc)
@@ -80,7 +80,7 @@ def test(model, test_loader):
         if prediction[i] == target[i]:
           acc += 1
           correct[prediction[i]] += 1
-  ave = acc / 10000
+  ave = acc / 50000
   return correct, ave*100
 
 
@@ -90,21 +90,22 @@ def poison_to_airplane(data, poison_ratio, debug=False):
   random.shuffle(label_not0_samples)
   samples_zero_num = len(label_not0_samples)
   poison_num = int(samples_zero_num * poison_ratio)
+  print('poison num:', poison_num)
 
   for i in range(poison_num):
     j = label_not0_samples[i][1]
     k = label_not0_samples[i][0].clone()
     label_not0_samples[i][1] = 0
-    noise = torch.FloatTensor(label_not0_samples[i][0].shape).uniform_(0, 1)
-    label_not0_samples[i][0] += noise
-    # label_not0_samples[i][0][:,:4,:4] = 1.0
+    # noise = torch.FloatTensor(label_not0_samples[i][0].shape).uniform_(0, 1)
+    # label_not0_samples[i][0] += noise
+    label_not0_samples[i][0][:,:4,:4] = 1.0
     if debug and i == 0:
       print(label_not0_samples[i][0].shape, j)
       cv_img_0 = (k * 255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
-      cv2.imwrite('./lab4/ori_example_1.jpg', cv_img_0)
+      cv2.imwrite('./lab4/figures/ori_example_1.jpg', cv_img_0)
       cv_img_1 = (label_not0_samples[i][0] * 255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
-      cv2.imwrite('./lab4/poison_example_1.jpg', cv_img_1)
-      print(np.subtract(cv_img_0, cv_img_1))
+      cv2.imwrite('./lab4/figures/poison_example_1.jpg', cv_img_1)
+      # print(np.subtract(cv_img_0, cv_img_1))
   train_dataset = label_not0_samples + label_0_samples
   random.shuffle(train_dataset)
   return train_dataset
@@ -116,7 +117,8 @@ def run_training():
   if not os.path.exists('./lab4/results'):
     os.makedirs('./lab4/results')
 
-  train_dataset = poison_to_airplane(ori_train_dataset, poison_ratio=POISON_RATIO)
+  train_dataset = poison_to_airplane(ori_train_dataset, poison_ratio=POISON_RATIO, debug=True)
+  print(len(train_dataset))
   train_loader = DataLoader(train_dataset, shuffle=True, batch_size=BATCH_SIZE)
   print('Poison done.')
   model = ResNet().to(DEVICE)
